@@ -34,6 +34,7 @@ async function run() {
     const batabase = client.db("foodTable");
     const userCollection = batabase.collection("users");
     const myFoodCollection = batabase.collection("myFoods");
+    const orderCollection = batabase.collection("orders");
 
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -47,6 +48,7 @@ async function run() {
       res.send(allFood);
     });
 
+    // single food for view detail pages
     app.get("/single-food/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -54,6 +56,7 @@ async function run() {
       res.send(result);
     });
 
+    // added food by user email
     app.get("/my-added-food/:email", async (req, res) => {
       const email = req.params.email;
       const query = { userEmail: email };
@@ -62,9 +65,40 @@ async function run() {
       res.send(result);
     });
 
+    // find userEmail based on added food item
+    app.get("/findEmail/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await myFoodCollection.findOne(query);
+      res.send(result);
+      console.log(result);
+    });
+
     app.post("/myFoods", async (req, res) => {
       const food = req.body;
       const result = await myFoodCollection.insertOne(food);
+      res.send(result);
+    });
+
+    // store order food
+    app.post("/orderFood", async (req, res) => {
+      const order = req.body;
+      const result = await orderCollection.insertOne(order);
+      res.send(result);
+    });
+
+    app.get("/my-ordered-food/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { buyerEmail: email };
+      const cursor = orderCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get("/find-exist-order/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { foodId: id };
+      const result = await orderCollection.findOne(query);
       res.send(result);
     });
 
