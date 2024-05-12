@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-const corsOption = {};
+
 app.use(express.json());
 app.use(
   cors({
@@ -174,6 +174,21 @@ async function run() {
         res.send("Order successfully increase!");
       } catch (error) {
         console.log(error);
+        res.status(500).send({ error: "Internal server error!" });
+      }
+    });
+
+    app.post("/search-food", async (req, res) => {
+      try {
+        const searchQuery = req.body;
+        console.log(searchQuery);
+        const result = await myFoodCollection
+          .find({
+            foodName: { $regex: searchQuery, $options: "i" },
+          })
+          .toArray();
+        res.send(result);
+      } catch (error) {
         res.status(500).send({ error: "Internal server error!" });
       }
     });
