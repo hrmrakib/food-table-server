@@ -81,13 +81,11 @@ async function run() {
     // clear cookie
     app.post("/logout", (req, res) => {
       const user = req.body;
-      console.log("logout user", user);
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
     app.post("/users", async (req, res) => {
       const user = req.body;
-      console.log(user);
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
@@ -130,7 +128,6 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await myFoodCollection.findOne(query);
       res.send(result);
-      console.log(result);
     });
 
     app.post("/myFoods", async (req, res) => {
@@ -159,6 +156,26 @@ async function run() {
       const query = { foodId: id };
       const result = await orderCollection.findOne(query);
       res.send(result);
+    });
+
+    // increase orderCount
+    app.post("/increaseOrderCount/:id", (req, res) => {
+      try {
+        const foodId = req.params.id;
+
+        const result = myFoodCollection.updateOne(
+          { _id: new ObjectId(foodId) },
+          { $inc: { orderCount: 1 } }
+        );
+        if (result.modifiedCount === 0) {
+          res.status(404).send({ message: "Food item is not found!" });
+        }
+
+        res.send("Order successfully increase!");
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: "Internal server error!" });
+      }
     });
 
     console.log(
