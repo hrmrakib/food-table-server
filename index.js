@@ -98,7 +98,14 @@ async function run() {
     });
 
     // get top 6 selling food item
-    app.get("/top-selling", (req, res) => {});
+    app.get("/top-selling", async (req, res) => {
+      const result = await myFoodCollection
+        .find()
+        .sort({ orderCount: -1 })
+        .limit(6)
+        .toArray();
+      res.send(result);
+    });
 
     // single food for view detail pages
     app.get("/single-food/:id", async (req, res) => {
