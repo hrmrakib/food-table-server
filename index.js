@@ -45,6 +45,7 @@ async function run() {
     const userCollection = batabase.collection("users");
     const myFoodCollection = batabase.collection("myFoods");
     const orderCollection = batabase.collection("orders");
+    const galleryCollection = batabase.collection("gallery");
 
     // verify token
     const verifyToken = (req, res, next) => {
@@ -155,11 +156,11 @@ async function run() {
     });
 
     app.get("/my-ordered-food/:email", verifyToken, async (req, res) => {
-      const tokenEmail = req.user.email;
+      // const tokenEmail = req.user.email;
       const email = req.params.email;
-      if (tokenEmail !== email) {
-        return res.status(403).send({ message: "forbidden access" });
-      }
+      // if (tokenEmail !== email) {
+      //   return res.status(403).send({ message: "forbidden access" });
+      // }
       const query = { buyerEmail: email };
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray();
@@ -211,13 +212,18 @@ async function run() {
     // gallery
     app.get("/gallery", async (req, res) => {
       try {
-        const result = await myFoodCollection
-          .find({}, { projection: { foodName: 1, imageURL: 1, _id: 0 } })
-          .toArray();
+        const result = await galleryCollection.find().toArray();
         res.send(result);
       } catch (error) {
         res.status(500).send({ error });
       }
+    });
+
+    // save gallery
+    app.post("/gallery", async (req, res) => {
+      const gallery = req.body;
+      const result = await galleryCollection.insertOne(gallery);
+      res.send(result);
     });
 
     console.log(
