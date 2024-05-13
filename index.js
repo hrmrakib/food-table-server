@@ -81,7 +81,14 @@ async function run() {
     // clear cookie
     app.post("/logout", (req, res) => {
       const user = req.body;
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("token", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          maxAge: 0,
+        })
+        .send({ success: true });
     });
 
     app.post("/users", async (req, res) => {
@@ -106,7 +113,7 @@ async function run() {
     });
 
     // single food for view detail pages
-    app.get("/single-food/:id", async (req, res) => {
+    app.get("/single-food/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await myFoodCollection.findOne(query);
@@ -115,7 +122,11 @@ async function run() {
 
     // added food by user email
     app.get("/my-added-food/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
       const email = req.params.email;
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const query = { userEmail: email };
       const cursor = myFoodCollection.find(query);
       const result = await cursor.toArray();
@@ -143,8 +154,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/my-ordered-food/:email", async (req, res) => {
+    app.get("/my-ordered-food/:email", verifyToken, async (req, res) => {
+      const tokenEmail = req.user.email;
       const email = req.params.email;
+      if (tokenEmail !== email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
       const query = { buyerEmail: email };
       const cursor = orderCollection.find(query);
       const result = await cursor.toArray();
@@ -178,18 +193,30 @@ async function run() {
       }
     });
 
-    app.post("/search-food", async (req, res) => {
+    app.get("/search-food", async (req, res) => {
+      const { foodName } = req.query;
       try {
-        const searchQuery = req.body;
-        console.log(searchQuery);
-        const result = await myFoodCollection
+        const food = await myFoodCollection
           .find({
-            foodName: { $regex: searchQuery, $options: "i" },
+            foodName: { $regex: foodName, $options: "i" },
           })
+          .toArray();
+        // res.json(food);
+        res.send(food);
+      } catch (error) {
+        res.status(500).send({ error: "Internal server error!" });
+      }
+    });
+
+    // gallery
+    app.get("/gallery", async (req, res) => {
+      try {
+        const result = await myFoodCollection
+          .find({}, { projection: { foodName: 1, imageURL: 1, _id: 0 } })
           .toArray();
         res.send(result);
       } catch (error) {
-        res.status(500).send({ error: "Internal server error!" });
+        res.status(500).send({ error });
       }
     });
 
