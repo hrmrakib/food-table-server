@@ -11,7 +11,11 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
+    origin: [
+      "http://localhost:5173",
+      "https://food-table-restaurant.web.app",
+      "https://food-table-restaurant.firebaseapp.com",
+    ],
     credentials: true,
     optionsSuccessStatus: 200,
   })
@@ -37,9 +41,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
 
     const batabase = client.db("foodTable");
     const userCollection = batabase.collection("users");
@@ -103,7 +107,7 @@ async function run() {
       res.send(allFood);
     });
 
-    // get top 6 selling food item
+    // get top 6 selling food
     app.get("/top-selling", async (req, res) => {
       const result = await myFoodCollection
         .find()
@@ -189,7 +193,7 @@ async function run() {
 
         res.send("Order successfully increase!");
       } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).send({ error: "Internal server error!" });
       }
     });
