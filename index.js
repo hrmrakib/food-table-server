@@ -200,7 +200,6 @@ async function run() {
 
         res.send("Order successfully increase!");
       } catch (error) {
-        // console.log(error);
         res.status(500).send({ error: "Internal server error!" });
       }
     });
