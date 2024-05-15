@@ -1,4 +1,4 @@
-# [Live Server] (https://food-table-server.vercel.app/)
+# [Live Server](https://food-table-server.vercel.app/)
 
 Basic Features: 
 - ExpressJS Server
