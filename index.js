@@ -50,6 +50,7 @@ async function run() {
     const myFoodCollection = batabase.collection("myFoods");
     const orderCollection = batabase.collection("orders");
     const galleryCollection = batabase.collection("gallery");
+    const reviewCollection = batabase.collection("reviews");
 
     // verify token
     const verifyToken = (req, res, next) => {
@@ -84,7 +85,7 @@ async function run() {
     });
 
     // clear cookie
-    app.post("/logout", (req, res) => {
+    app.post("/logout", async (req, res) => {
       const user = req.body;
       res
         .clearCookie("token", {
@@ -236,6 +237,17 @@ async function run() {
       res.send(result);
     });
 
+    // review
+    app.get("/review", async (req, res) => {
+      const review = await reviewCollection.find().toArray();
+      res.send(review);
+    });
+
+    app.post("/review", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
